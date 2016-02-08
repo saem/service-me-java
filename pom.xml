@@ -8,6 +8,10 @@
     <artifactId>service-me-java</artifactId>
     <version>0.1-SNAPSHOT</version>
 
+    <!-- Liberally borrowed from:
+     https://github.com/dropwizard/dropwizard/blob/master/dropwizard-example/pom.xml
+     -->
+
     <properties>
         <!-- use UTF-8 for everything -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
