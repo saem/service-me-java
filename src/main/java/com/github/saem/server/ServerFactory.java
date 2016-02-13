@@ -11,6 +11,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public final class ServerFactory {
+    private final static Logger LOGGER =
+            LogManager.getLogger(ServerFactory.class);
+    private final static Logger accessLog = LogManager.getLogger("access-log");
+
     public static Undertow build(final String host,
                                  final int port,
                                  final HttpHandler router) {
@@ -21,6 +25,8 @@ public final class ServerFactory {
     }
 
     private static HttpHandler middlewareHandlers(final HttpHandler next) {
+        LOGGER.info("start - setting up the logger");
+
         final ExceptionHandler exceptionHandler =
                 Handlers.exceptionHandler(next)
                 .addExceptionHandler(
@@ -33,16 +39,17 @@ public final class ServerFactory {
                         }
                 );
 
-        final Logger accessLog = LogManager.getLogger("access-log");
         final AccessLogHandler logHandler = new AccessLogHandler(
                 exceptionHandler,
-                accessLog::info,
-                "combined",
+                x -> {
+                    accessLog.debug(x);
+                },
+                "\"%r\" %s %b \"%{i,Referer}\" \"%{i,User-Agent}\"",
                 ServerFactory.class.getClassLoader()
         );
 
+        LOGGER.info("end - setting up the logger");
+
         return logHandler;
     }
-
 }
-

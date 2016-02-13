@@ -1,10 +1,10 @@
-package com.github.saem.admin;
+package com.github.saem.server.admin;
 
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.health.HealthCheckRegistry;
 import com.codahale.metrics.servlets.AdminServlet;
 import com.codahale.metrics.servlets.HealthCheckServlet;
 import com.codahale.metrics.servlets.MetricsServlet;
+import com.github.saem.scaffolding.components.healthchecks.HealthCheckComponent;
+import com.github.saem.scaffolding.components.metrics.MetricsComponent;
 import io.undertow.server.HttpHandler;
 import io.undertow.servlet.Servlets;
 import io.undertow.servlet.api.DeploymentInfo;
@@ -15,19 +15,19 @@ import javax.servlet.ServletException;
 public final class AdminHandlerFactory {
 
     public static HttpHandler buildHandler(
-            final HealthCheckRegistry healthChecks,
-            final MetricRegistry metrics) {
+            final HealthCheckComponent healthChecks,
+            final MetricsComponent metrics) {
         final DeploymentInfo servletBuilder = Servlets.deployment()
                 .setClassLoader(AdminHandlerFactory.class.getClassLoader())
                 .setContextPath("/")
                 .setDeploymentName("admin.war")
                 .addServletContextAttribute(
                         MetricsServlet.METRICS_REGISTRY,
-                        metrics
+                        metrics.registry
                 )
                 .addServletContextAttribute(
                         HealthCheckServlet.HEALTH_CHECK_REGISTRY,
-                        healthChecks)
+                        healthChecks.registry)
                 .addServlets(
                         Servlets.servlet("AdminServlet", AdminServlet.class)
                                 .addMapping("/*"));
