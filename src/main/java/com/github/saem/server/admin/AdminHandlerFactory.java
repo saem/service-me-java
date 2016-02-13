@@ -1,48 +1,33 @@
-package com.github.saem;
+package com.github.saem.server.admin;
 
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.health.HealthCheckRegistry;
 import com.codahale.metrics.servlets.AdminServlet;
 import com.codahale.metrics.servlets.HealthCheckServlet;
 import com.codahale.metrics.servlets.MetricsServlet;
+import com.github.saem.scaffolding.components.healthchecks.HealthCheckComponent;
+import com.github.saem.scaffolding.components.metrics.MetricsComponent;
 import io.undertow.server.HttpHandler;
-import io.undertow.server.handlers.PredicateHandler;
 import io.undertow.servlet.Servlets;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.DeploymentManager;
 
 import javax.servlet.ServletException;
 
-public final class HttpRouting
-        <App extends HttpHandler, Admin extends HttpHandler>
-        extends PredicateHandler {
+public final class AdminHandlerFactory {
 
-    public HttpRouting(
-            final App app,
-            final Admin admin,
-            final int adminPort) {
-        super(exchange -> exchange.getHostPort() == adminPort,
-                admin,
-                app);
-    }
-}
-
-final class AdminServletServer {
-
-    public static HttpHandler buildServletHandler(
-            final HealthCheckRegistry healthChecks,
-            final MetricRegistry metrics) {
+    public static HttpHandler buildHandler(
+            final HealthCheckComponent healthChecks,
+            final MetricsComponent metrics) {
         final DeploymentInfo servletBuilder = Servlets.deployment()
-                .setClassLoader(AdminServletServer.class.getClassLoader())
+                .setClassLoader(AdminHandlerFactory.class.getClassLoader())
                 .setContextPath("/")
                 .setDeploymentName("admin.war")
                 .addServletContextAttribute(
                         MetricsServlet.METRICS_REGISTRY,
-                        metrics
+                        metrics.registry
                 )
                 .addServletContextAttribute(
                         HealthCheckServlet.HEALTH_CHECK_REGISTRY,
-                        healthChecks)
+                        healthChecks.registry)
                 .addServlets(
                         Servlets.servlet("AdminServlet", AdminServlet.class)
                                 .addMapping("/*"));
